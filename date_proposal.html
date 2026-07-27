@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Will you go on a date with me?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink: #FFC0CB;
+    --pink-deep: #FF8FAB;
+    --pink-deeper: #FF6F9C;
+    --white: #FFFFFF;
+    --cream: #FFF7F9;
+    --ink: #3A2E39;
+    --ink-soft: #7A6B76;
+    --glass-border: rgba(255,255,255,0.6);
+    --shadow: 0 20px 60px -20px rgba(255, 111, 156, 0.35);
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; }
+
+  body{
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(160deg, var(--cream) 0%, #FFF0F4 45%, #FFE6EE 100%);
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* ---------- floating hearts background ---------- */
+  #heart-field{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .bg-heart{
+    position: absolute;
+    bottom: -10%;
+    opacity: 0.5;
+    animation: floatUp linear infinite;
+    color: var(--pink-deep);
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10%{ opacity: 0.55; }
+    90%{ opacity: 0.45; }
+    100%{ transform: translateY(-115vh) translateX(var(--drift, 20px)) rotate(20deg); opacity: 0; }
+  }
+
+  /* ---------- app shell ---------- */
+  #app{
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .page{
+    width: 100%;
+    max-width: 560px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 22px;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border);
+    border-radius: 32px;
+    padding: 48px 36px;
+    box-shadow: var(--shadow);
+    position: relative;
+    min-height: 420px;
+    justify-content: center;
+  }
+  .page.active{ display: flex; }
+
+  .page.enter{ animation: pageIn 0.6s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes pageIn{
+    from{ opacity: 0; transform: translateY(24px) scale(0.98); }
+    to{ opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .page.leave{ animation: pageOut 0.35s ease forwards; }
+  @keyframes pageOut{
+    to{ opacity: 0; transform: translateY(-16px) scale(0.98); }
+  }
+
+  .eyebrow{
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--pink-deeper);
+    font-weight: 600;
+  }
+
+  h1{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 6vw, 40px);
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  p.sub{
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 420px;
+    line-height: 1.5;
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 999px;
+    padding: 16px 34px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:focus-visible{
+    outline: 3px solid var(--pink-deeper);
+    outline-offset: 3px;
+  }
+  .btn-pink{
+    background: linear-gradient(135deg, var(--pink-deep), var(--pink-deeper));
+    color: white;
+    box-shadow: 0 12px 28px -10px rgba(255, 111, 156, 0.6);
+  }
+  .btn-pink:hover{ transform: translateY(-2px) scale(1.04); box-shadow: 0 16px 32px -8px rgba(255, 111, 156, 0.7); }
+  .btn-pink:active{ transform: translateY(0) scale(0.98); }
+  .btn-pink:disabled{
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .btn-pink:disabled:hover{ transform: none; }
+
+  .btn-outline{
+    background: transparent;
+    color: var(--pink-deeper);
+    border: 2px solid var(--pink-deep);
+  }
+
+  /* ---------- page 1 choice row ---------- */
+  #choice-row{
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    min-height: 130px;
+  }
+  #no-btn{
+    position: relative;
+    transition: transform 0.22s cubic-bezier(.22,1,.36,1), left 0.22s cubic-bezier(.22,1,.36,1), top 0.22s cubic-bezier(.22,1,.36,1);
+  }
+  #choice-row.dodging{
+    position: relative;
+    min-height: 220px;
+  }
+  #choice-row.dodging #no-btn{
+    position: absolute;
+  }
+
+  /* ---------- page 3 pickers ---------- */
+  .field-group{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .field{
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .field label{
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .field input{
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 2px solid rgba(255,143,171,0.35);
+    background: rgba(255,255,255,0.8);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .field input:focus{ border-color: var(--pink-deeper); }
+
+  /* ---------- page 4 food grid ---------- */
+  .food-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  .food-card{
+    background: rgba(255,255,255,0.75);
+    border: 2px solid transparent;
+    border-radius: 18px;
+    padding: 16px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .food-card:hover{ transform: translateY(-3px); }
+  .food-card .emoji{ font-size: 30px; }
+  .food-card .label{
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-family: 'Poppins', sans-serif;
+  }
+  .food-card.selected{
+    border-color: var(--pink-deeper);
+    background: rgba(255,192,203,0.4);
+  }
+  .food-card.selected .label{ color: var(--pink-deeper); }
+
+  /* ---------- final page ---------- */
+  .final-heart{
+    font-size: 46px;
+    animation: pulseHeart 1.4s ease-in-out infinite;
+  }
+  @keyframes pulseHeart{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.18); }
+  }
+  .note{
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin-top: -6px;
+  }
+  #confetti-canvas{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  @media (max-width: 420px){
+    .page{ padding: 36px 22px; }
+    .food-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="heart-field"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<div id="app">
+
+  <!-- PAGE 1 -->
+  <section class="page active enter" id="page-1">
+    <span class="eyebrow">A question</span>
+    <h1>Will you go on a date with me?</h1>
+    <div id="choice-row">
+      <button class="btn btn-pink" id="yes-btn">YES</button>
+      <button class="btn btn-outline" id="no-btn">NO</button>
+    </div>
+  </section>
+
+  <!-- PAGE 2 -->
+  <section class="page" id="page-2">
+    <h1>WAIT YOU ACTUALLY SAID YES?? 😭</h1>
+    <p class="sub">I was so ready for you to say no.</p>
+    <button class="btn btn-pink" id="to-page-3">Okay okay!! ➜</button>
+  </section>
+
+  <!-- PAGE 3 -->
+  <section class="page" id="page-3">
+    <h1>So.... when are you free?</h1>
+    <div class="field-group">
+      <div class="field">
+        <label for="date-input">Pick a date</label>
+        <input type="date" id="date-input" />
+      </div>
+      <div class="field">
+        <label for="time-input">What time?</label>
+        <input type="time" id="time-input" />
+      </div>
+    </div>
+    <button class="btn btn-pink" id="to-page-4" disabled>Set the Date</button>
+  </section>
+
+  <!-- PAGE 4 -->
+  <section class="page" id="page-4">
+    <h1>What are you feeling?</h1>
+    <div class="food-grid" id="food-grid">
+      <div class="food-card" data-food="Pizza"><span class="emoji">🍕</span><span class="label">Pizza</span></div>
+      <div class="food-card" data-food="Sushi"><span class="emoji">🍣</span><span class="label">Sushi</span></div>
+      <div class="food-card" data-food="Ice Cream"><span class="emoji">🍦</span><span class="label">Ice Cream</span></div>
+      <div class="food-card" data-food="Ramen"><span class="emoji">🍜</span><span class="label">Ramen</span></div>
+      <div class="food-card" data-food="Pasta"><span class="emoji">🍝</span><span class="label">Pasta</span></div>
+      <div class="food-card" data-food="Tacos"><span class="emoji">🌮</span><span class="label">Tacos</span></div>
+      <div class="food-card" data-food="Street Food"><span class="emoji">🍢</span><span class="label">Street Food</span></div>
+    </div>
+    <button class="btn btn-pink" id="to-final" style="display:none;">This One ❤️</button>
+  </section>
+
+  <!-- FINAL PAGE -->
+  <section class="page" id="page-final">
+    <div class="final-heart">❤️</div>
+    <h1>Glad you didn't say no ❤️</h1>
+    <p class="sub" id="final-line">Be ready by <strong id="final-time"></strong>. I'm coming to get you, Tisha.</p>
+    <p class="note">Normal people text. I made a website for you after finishing my exam.</p>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- floating hearts background ----------
+  const heartField = document.getElementById('heart-field');
+  const heartChars = ['❤','💗','💕'];
+  function spawnHeart(){
+    const h = document.createElement('div');
+    h.className = 'bg-heart';
+    h.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
+    const size = 14 + Math.random()*20;
+    h.style.fontSize = size + 'px';
+    h.style.left = Math.random()*100 + '%';
+    h.style.setProperty('--drift', (Math.random()*80 - 40) + 'px');
+    const duration = 9 + Math.random()*8;
+    h.style.animationDuration = duration + 's';
+    heartField.appendChild(h);
+    setTimeout(()=> h.remove(), duration*1000 + 200);
+  }
+  for(let i=0;i<10;i++) setTimeout(spawnHeart, i*400);
+  setInterval(spawnHeart, 900);
+
+  // ---------- page navigation ----------
+  const pages = {
+    1: document.getElementById('page-1'),
+    2: document.getElementById('page-2'),
+    3: document.getElementById('page-3'),
+    4: document.getElementById('page-4'),
+    final: document.getElementById('page-final')
+  };
+
+  function goTo(key){
+    const current = document.querySelector('.page.active');
+    const next = pages[key];
+    if(!current || !next || current === next) return;
+    current.classList.add('leave');
+    setTimeout(()=>{
+      current.classList.remove('active','leave','enter');
+      next.classList.add('active','enter');
+      setTimeout(()=> next.classList.remove('enter'), 650);
+      if(key === 'final') launchCelebration();
+    }, 320);
+  }
+
+  // ---------- page 1: dodging NO button ----------
+  const choiceRow = document.getElementById('choice-row');
+  const noBtn = document.getElementById('no-btn');
+  const yesBtn = document.getElementById('yes-btn');
+  let dodging = false;
+
+  function dodge(){
+    const rowRect = choiceRow.getBoundingClientRect();
+    const btnRect = noBtn.getBoundingClientRect();
+    if(!dodging){
+      dodging = true;
+      choiceRow.classList.add('dodging');
+      noBtn.style.left = (btnRect.left - rowRect.left) + 'px';
+      noBtn.style.top = (btnRect.top - rowRect.top) + 'px';
+      // force reflow so the absolute position "starts" where it visually was
+      void noBtn.offsetWidth;
+    }
+    const maxLeft = Math.max(rowRect.width - btnRect.width - 4, 4);
+    const maxTop = Math.max(rowRect.height - btnRect.height - 4, 4);
+    const newLeft = Math.random() * maxLeft;
+    const newTop = Math.random() * maxTop;
+    noBtn.style.left = newLeft + 'px';
+    noBtn.style.top = newTop + 'px';
+  }
+
+  noBtn.addEventListener('mouseenter', dodge);
+  noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+  noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, {passive:false});
+  // occasionally the button also gets nervous on its own once someone reaches page 1 for a while
+  document.addEventListener('mousemove', (e) => {
+    if(!pages[1].classList.contains('active')) return;
+    const r = noBtn.getBoundingClientRect();
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+    if(dist < 70) dodge();
+  });
+
+  yesBtn.addEventListener('click', () => goTo(2));
+
+  // ---------- page 2 ----------
+  document.getElementById('to-page-3').addEventListener('click', () => goTo(3));
+
+  // ---------- page 3: date & time ----------
+  const dateInput = document.getElementById('date-input');
+  const timeInput = document.getElementById('time-input');
+  const toPage4Btn = document.getElementById('to-page-4');
+  let selectedDate = '', selectedTime = '';
+
+  function checkDateTime(){
+    toPage4Btn.disabled = !(dateInput.value && timeInput.value);
+  }
+  dateInput.addEventListener('change', () => { selectedDate = dateInput.value; checkDateTime(); });
+  timeInput.addEventListener('change', () => { selectedTime = timeInput.value; checkDateTime(); });
+  toPage4Btn.addEventListener('click', () => goTo(4));
+
+  // ---------- page 4: food ----------
+  const foodCards = document.querySelectorAll('.food-card');
+  const toFinalBtn = document.getElementById('to-final');
+  let selectedFood = null;
+
+  foodCards.forEach(card => {
+    card.addEventListener('click', () => {
+      foodCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedFood = card.dataset.food;
+      toFinalBtn.style.display = 'inline-block';
+    });
+  });
+  toFinalBtn.addEventListener('click', () => goTo('final'));
+
+  // ---------- final page: fill in the time ----------
+  function formatTime(t){
+    if(!t) return 'the agreed time';
+    const [h, m] = t.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = ((h % 12) || 12);
+    return `${hour12}:${String(m).padStart(2,'0')} ${period}`;
+  }
+
+  function fillFinal(){
+    document.getElementById('final-time').textContent = formatTime(selectedTime);
+  }
+
+  // ---------- confetti + celebration ----------
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  let confettiPieces = [];
+  let confettiRunning = false;
+
+  function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const confettiColors = ['#FF8FAB', '#FFC0CB', '#FF6F9C', '#FFD6E0', '#FFFFFF'];
+
+  function launchCelebration(){
+    fillFinal();
+    confettiPieces = [];
+    for(let i=0;i<120;i++){
+      confettiPieces.push({
+        x: Math.random()*canvas.width,
+        y: -20 - Math.random()*canvas.height*0.5,
+        w: 6 + Math.random()*6,
+        h: 8 + Math.random()*10,
+        color: confettiColors[Math.floor(Math.random()*confettiColors.length)],
+        speedY: 2 + Math.random()*3,
+        speedX: (Math.random()-0.5)*2,
+        rotation: Math.random()*360,
+        rotSpeed: (Math.random()-0.5)*8,
+        isHeart: Math.random() < 0.25
+      });
+    }
+    if(!confettiRunning){
+      confettiRunning = true;
+      requestAnimationFrame(animateConfetti);
+    }
+    setTimeout(()=>{ confettiRunning = false; ctx.clearRect(0,0,canvas.width,canvas.height); }, 5200);
+  }
+
+  function drawHeartShape(x, y, size, color){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    const s = size/2;
+    ctx.moveTo(0, s*0.3);
+    ctx.bezierCurveTo(0, -s*0.3, -s, -s*0.3, -s, s*0.3);
+    ctx.bezierCurveTo(-s, s*0.9, 0, s*1.2, 0, s*1.6);
+    ctx.bezierCurveTo(0, s*1.2, s, s*0.9, s, s*0.3);
+    ctx.bezierCurveTo(s, -s*0.3, 0, -s*0.3, 0, s*0.3);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function animateConfetti(){
+    if(!confettiRunning) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confettiPieces.forEach(p => {
+      p.y += p.speedY;
+      p.x += p.speedX;
+      p.rotation += p.rotSpeed;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI/180);
+      if(p.isHeart){
+        drawHeartShape(0,0,p.w,p.color);
+      } else {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      }
+      ctx.restore();
+    });
+    confettiPieces = confettiPieces.filter(p => p.y < canvas.height + 30);
+    requestAnimationFrame(animateConfetti);
+  }
+})();
+</script>
+
+</body>
+</html>
